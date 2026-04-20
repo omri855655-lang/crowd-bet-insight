@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
 import { games, bookmakers } from "@/data/mockData";
+import { useI18n } from "@/i18n/i18n";
 
 export const OddsComparison = () => {
-  const game = games[0]; // Featured: Real Madrid vs Man City
+  const { t } = useI18n();
+  const game = games[0];
 
-  // Find best odds per outcome
   const bestHome = Math.max(...Object.values(game.odds).map((o) => o.home));
   const bestDraw = Math.max(...Object.values(game.odds).map((o) => o.draw ?? 0));
   const bestAway = Math.max(...Object.values(game.odds).map((o) => o.away));
@@ -12,13 +13,11 @@ export const OddsComparison = () => {
   return (
     <section className="container py-16 md:py-24">
       <div className="text-center mb-12">
-        <div className="text-xs uppercase tracking-[0.2em] text-primary mb-3">Odds comparison</div>
+        <div className="text-xs uppercase tracking-[0.2em] text-primary mb-3">{t("odds.eyebrow")}</div>
         <h2 className="font-display text-4xl md:text-5xl font-bold leading-tight max-w-3xl mx-auto">
-          Six bookmakers. <span className="italic text-gradient-gold">One winner.</span>
+          {t("odds.title1")} <span className="italic text-gradient-gold">{t("odds.title2")}</span>
         </h2>
-        <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
-          Always shop for the best line. Highlighted in gold = best available odds for that outcome.
-        </p>
+        <p className="text-muted-foreground mt-4 max-w-xl mx-auto">{t("odds.subtitle")}</p>
       </div>
 
       <motion.div
@@ -28,7 +27,6 @@ export const OddsComparison = () => {
         transition={{ duration: 0.6 }}
         className="glass-card rounded-2xl overflow-hidden shadow-elevated"
       >
-        {/* Featured game header */}
         <div className="bg-gradient-card p-6 border-b border-border/50">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
@@ -36,38 +34,37 @@ export const OddsComparison = () => {
               <div>
                 <div className="text-[10px] uppercase tracking-[0.15em] text-primary font-semibold mb-0.5">{game.league}</div>
                 <div className="font-display text-2xl font-bold">
-                  {game.homeTeam} <span className="text-muted-foreground text-base">vs</span> {game.awayTeam}
+                  {game.homeTeam} <span className="text-muted-foreground text-base">{t("card.vs").toLowerCase()}</span> {game.awayTeam}
                 </div>
                 <div className="text-xs text-muted-foreground mt-1 tabular">{game.startTime}</div>
               </div>
               <div className="text-3xl">{game.awayFlag}</div>
             </div>
-            <div className="text-right">
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Total volume</div>
+            <div className="text-end">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("odds.total_vol")}</div>
               <div className="font-display text-2xl font-bold text-gradient-gold tabular">${game.totalVolume}M</div>
             </div>
           </div>
         </div>
 
-        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-border/50 bg-secondary/30">
-                <th className="text-left text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold py-4 px-6">
-                  Bookmaker
+                <th className="text-start text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold py-4 px-6">
+                  {t("odds.bookmaker")}
                 </th>
                 <th className="text-center text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold py-4 px-4">
                   {game.homeTeam}
                 </th>
                 <th className="text-center text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold py-4 px-4">
-                  Draw
+                  {t("odds.draw")}
                 </th>
                 <th className="text-center text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold py-4 px-4">
                   {game.awayTeam}
                 </th>
-                <th className="text-right text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold py-4 px-6">
-                  Region
+                <th className="text-end text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold py-4 px-6">
+                  {t("odds.region")}
                 </th>
               </tr>
             </thead>
@@ -90,7 +87,7 @@ export const OddsComparison = () => {
                         <span className="text-2xl">{bm.logo}</span>
                         <div>
                           <div className="font-semibold text-sm">{bm.name}</div>
-                          {isWinner && <div className="text-[10px] text-primary font-semibold">★ Local favourite</div>}
+                          {isWinner && <div className="text-[10px] text-primary font-semibold">{t("odds.local_fav")}</div>}
                         </div>
                       </div>
                     </td>
@@ -103,7 +100,7 @@ export const OddsComparison = () => {
                     <td className="text-center py-4 px-4">
                       <OddCell value={o.away} isBest={o.away === bestAway} />
                     </td>
-                    <td className="text-right py-4 px-6">
+                    <td className="text-end py-4 px-6">
                       <span className="text-xs text-muted-foreground">{bm.region}</span>
                     </td>
                   </motion.tr>
@@ -113,9 +110,8 @@ export const OddsComparison = () => {
           </table>
         </div>
 
-        {/* Footer note */}
         <div className="p-5 bg-secondary/20 border-t border-border/50 text-center text-xs text-muted-foreground">
-          💡 Best price difference: <span className="text-foreground font-semibold tabular">+9.5%</span> on {game.awayTeam} between FanDuel and DraftKings
+          {t("odds.diff_note")}
         </div>
       </motion.div>
     </section>
@@ -127,9 +123,7 @@ const OddCell = ({ value, isBest }: { value?: number; isBest: boolean }) => {
   return (
     <span
       className={`inline-block min-w-[60px] py-1.5 px-3 rounded-lg font-display text-base font-bold tabular ${
-        isBest
-          ? "bg-gradient-gold text-primary-foreground shadow-gold"
-          : "text-foreground"
+        isBest ? "bg-gradient-gold text-primary-foreground shadow-gold" : "text-foreground"
       }`}
     >
       {value.toFixed(2)}
