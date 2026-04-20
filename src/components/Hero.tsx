@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight, Sparkles } from "lucide-react";
 import { stats } from "@/data/mockData";
+import { useI18n } from "@/i18n/i18n";
 
 export const Hero = () => {
+  const { t } = useI18n();
   return (
     <section className="relative overflow-hidden bg-grid">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background pointer-events-none" />
@@ -17,33 +19,29 @@ export const Hero = () => {
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card mb-8">
             <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span className="text-xs font-medium tracking-wide text-foreground/80">
-              Powered by 124,800+ bettors worldwide
-            </span>
+            <span className="text-xs font-medium tracking-wide text-foreground/80">{t("hero.badge")}</span>
           </div>
 
           <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[1.05] mb-6">
-            Where the <span className="text-gradient-gold italic">smart money</span><br />
-            actually moves.
+            {t("hero.title1")} <span className="text-gradient-gold italic">{t("hero.title2")}</span><br />
+            {t("hero.title3")}
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-            Real-time odds from Winner, Bet365, Pinnacle and more — overlaid with
-            <span className="text-foreground"> what the crowd is actually betting</span>. See where every dollar goes.
+            {t("hero.subtitle")}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
             <button className="group flex items-center gap-2 px-7 py-3.5 rounded-full bg-gradient-gold text-primary-foreground font-semibold shadow-gold hover:scale-105 transition-transform">
-              Explore live games
+              {t("hero.cta1")}
               <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </button>
             <button className="px-7 py-3.5 rounded-full glass-card text-foreground font-semibold hover:bg-secondary/60 transition-colors">
-              Report your bet
+              {t("hero.cta2")}
             </button>
           </div>
         </motion.div>
 
-        {/* Stats strip */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -51,10 +49,10 @@ export const Hero = () => {
           className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border/40 rounded-2xl overflow-hidden glass-card max-w-5xl mx-auto"
         >
           {[
-            { label: "24h Volume", value: `$${stats.totalVolume24h}M`, change: `+${stats.volumeChange}%` },
-            { label: "Active Bets", value: stats.activeBets.toLocaleString(), change: `+${stats.betsChange}%` },
-            { label: "Live Games", value: stats.liveGames, change: "now" },
-            { label: "Bettors", value: `${(stats.totalUsers / 1000).toFixed(1)}K`, change: "+2.1%" },
+            { label: t("stats.volume"), value: `$${stats.totalVolume24h}M`, change: `+${stats.volumeChange}%` },
+            { label: t("stats.bets"), value: stats.activeBets.toLocaleString(), change: `+${stats.betsChange}%` },
+            { label: t("stats.live"), value: stats.liveGames, change: t("stats.now") },
+            { label: t("stats.bettors"), value: `${(stats.totalUsers / 1000).toFixed(1)}K`, change: "+2.1%" },
           ].map((s, i) => (
             <div key={i} className="p-6 md:p-8 bg-card/60">
               <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-2">{s.label}</div>
