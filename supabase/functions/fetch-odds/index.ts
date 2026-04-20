@@ -1,7 +1,10 @@
 // Edge function: fetch real odds from The Odds API
 // Docs: https://the-odds-api.com/liveapi/guides/v4/
 
-import { corsHeaders } from "@supabase/supabase-js/cors";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 interface BookmakerOdds {
   key: string;
