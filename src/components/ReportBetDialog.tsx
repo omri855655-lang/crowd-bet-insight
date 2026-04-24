@@ -65,9 +65,18 @@ export const ReportBetDialog = ({ trigger }: { trigger?: React.ReactNode }) => {
       return;
     }
     setLoading(true);
+    const d = parsed.data;
     const { error } = await supabase.from("bets").insert([{
       user_id: user.id,
-      ...parsed.data,
+      sport: d.sport,
+      league: d.league || null,
+      home_team: d.home_team,
+      away_team: d.away_team,
+      bet_on: d.bet_on,
+      amount: d.amount,
+      currency: d.currency,
+      bookmaker: d.bookmaker,
+      odds: d.odds ?? null,
       result: "pending",
     }]);
     setLoading(false);
