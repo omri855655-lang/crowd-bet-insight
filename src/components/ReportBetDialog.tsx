@@ -65,11 +65,11 @@ export const ReportBetDialog = ({ trigger }: { trigger?: React.ReactNode }) => {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.from("bets").insert({
+    const { error } = await supabase.from("bets").insert([{
       user_id: user.id,
       ...parsed.data,
       result: "pending",
-    });
+    }]);
     setLoading(false);
     if (error) {
       toast.error(error.message);
