@@ -192,3 +192,56 @@
     animation: shimmer 3s infinite;
   }
 }
+
+/* ============================================
+   ACCESSIBILITY OVERRIDES
+   ============================================ */
+.a11y-high-contrast {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 5%;
+  --card-foreground: 0 0% 100%;
+  --primary: 50 100% 60%;
+  --primary-foreground: 0 0% 0%;
+  --border: 0 0% 50%;
+  --muted-foreground: 0 0% 90%;
+}
+.a11y-high-contrast * { text-shadow: none !important; }
+
+.a11y-reduced-motion *,
+.a11y-reduced-motion *::before,
+.a11y-reduced-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+.a11y-underline-links a { text-decoration: underline !important; }
+
+/* Colorblind filters */
+[data-colorblind="protanopia"]   { filter: url('#cb-protanopia'); }
+[data-colorblind="deuteranopia"] { filter: url('#cb-deuteranopia'); }
+[data-colorblind="tritanopia"]   { filter: url('#cb-tritanopia'); }
+
+/* Visible focus ring for keyboard nav */
+*:focus-visible {
+  outline: 3px solid hsl(var(--primary)) !important;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.skip-to-content {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  padding: 12px 20px;
+  z-index: 9999;
+  font-weight: 600;
+  border-radius: 0 0 8px 0;
+}
+.skip-to-content:focus {
+  left: 0;
+}
