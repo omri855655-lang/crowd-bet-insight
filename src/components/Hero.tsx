@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { ArrowUpRight, Sparkles } from "lucide-react";
 import { stats } from "@/data/mockData";
 import { useI18n } from "@/i18n/i18n";
+import { ReportBetDialog } from "@/components/ReportBetDialog";
 
 export const Hero = () => {
   const { t } = useI18n();
@@ -32,13 +33,17 @@ export const Hero = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <button className="group flex items-center gap-2 px-7 py-3.5 rounded-full bg-gradient-gold text-primary-foreground font-semibold shadow-gold hover:scale-105 transition-transform">
+            <a href="#results" className="group flex items-center gap-2 px-7 py-3.5 rounded-full bg-gradient-gold text-primary-foreground font-semibold shadow-gold hover:scale-105 transition-transform">
               {t("hero.cta1")}
               <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </button>
-            <button className="px-7 py-3.5 rounded-full glass-card text-foreground font-semibold hover:bg-secondary/60 transition-colors">
-              {t("hero.cta2")}
-            </button>
+            </a>
+            <ReportBetDialog
+              trigger={
+                <button className="px-7 py-3.5 rounded-full glass-card text-foreground font-semibold hover:bg-secondary/60 transition-colors">
+                  {t("hero.cta2")}
+                </button>
+              }
+            />
           </div>
         </motion.div>
 
