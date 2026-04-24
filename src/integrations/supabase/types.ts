@@ -14,16 +14,212 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bets: {
+        Row: {
+          amount: number
+          away_team: string
+          bet_on: string
+          bookmaker: string
+          created_at: string
+          currency: string
+          game_id: string | null
+          game_starts_at: string | null
+          home_team: string
+          id: string
+          league: string | null
+          odds: number | null
+          result: string | null
+          sport: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          away_team: string
+          bet_on: string
+          bookmaker: string
+          created_at?: string
+          currency?: string
+          game_id?: string | null
+          game_starts_at?: string | null
+          home_team: string
+          id?: string
+          league?: string | null
+          odds?: number | null
+          result?: string | null
+          sport: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          away_team?: string
+          bet_on?: string
+          bookmaker?: string
+          created_at?: string
+          currency?: string
+          game_id?: string | null
+          game_starts_at?: string | null
+          home_team?: string
+          id?: string
+          league?: string | null
+          odds?: number | null
+          result?: string | null
+          sport?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      games_cache: {
+        Row: {
+          away_score: number | null
+          away_team: string
+          external_id: string
+          finished_at: string | null
+          home_score: number | null
+          home_team: string
+          id: string
+          league: string | null
+          raw: Json | null
+          sport: string
+          starts_at: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          away_score?: number | null
+          away_team: string
+          external_id: string
+          finished_at?: string | null
+          home_score?: number | null
+          home_team: string
+          id?: string
+          league?: string | null
+          raw?: Json | null
+          sport: string
+          starts_at?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          away_score?: number | null
+          away_team?: string
+          external_id?: string
+          finished_at?: string | null
+          home_score?: number | null
+          home_team?: string
+          id?: string
+          league?: string | null
+          raw?: Json | null
+          sport?: string
+          starts_at?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          preferred_language: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          preferred_language?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          preferred_language?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          id: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          tier: Database["public"]["Enums"]["subscription_tier"]
+          trial_ends_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          trial_ends_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          trial_ends_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_pro_user: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
+      subscription_tier: "free" | "pro"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +346,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+      subscription_tier: ["free", "pro"],
+    },
   },
 } as const
