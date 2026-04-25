@@ -41,19 +41,23 @@ export const CrowdFeed = () => {
   const [usingMock, setUsingMock] = useState(false);
 
   const load = async () => {
-    const { data } = await supabase
+    const { data: betsData } = await supabase
       .from("bets")
-      .select(`
-        id, bet_on, amount, odds, currency, bookmaker,
-        home_team, away_team, created_at,
-        profiles:user_id(display_name)
-      `)
+      .select("id, bet_on, amount, odds, currency, bookmaker, home_team, away_team, created_at, user_id")
       .order("created_at", { ascending: false })
       .limit(15);
 
-    if (data && data.length > 0) {
-      const mapped: FeedBet[] = data.map((b: any) => {
-        const name = b.profiles?.display_name || "anon";
+    if (betsData && betsData.length > 0) {
+      // Fetch profiles separately
+      const userIds = [...new Set(betsData.map((b: any) => b.user_id))];
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("user_id, display_name")
+        .in("user_id", userIds);
+      const nameMap = new Map((profs || []).map((p: any) => [p.user_id, p.display_name]));
+
+      const mapped: FeedBet[] = betsData.map((b: any) => {
+        const name = nameMap.get(b.user_id) || "anon";
         return {
           id: b.id,
           user: name,
