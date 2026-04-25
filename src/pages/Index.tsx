@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/Navbar";
+import { TrialBanner } from "@/components/TrialBanner";
 import { Hero } from "@/components/Hero";
 import { LiveGamesBoard } from "@/components/LiveGamesBoard";
 import { CrowdWisdom } from "@/components/CrowdWisdom";
@@ -13,6 +14,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      <TrialBanner />
       <main id="main">
         <Hero />
         <LiveGamesBoard />
@@ -21,7 +23,7 @@ const Index = () => {
         <CrowdWisdom />
         <CrowdFeed />
         <AIRecommendations />
-        <PricingSection />
+        <div id="pricing"><PricingSection /></div>
       </main>
       <Footer />
     </div>
