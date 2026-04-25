@@ -68,6 +68,9 @@ export const DailyResults = () => {
 
   useEffect(() => {
     fetchGames();
+    // Auto-refresh every 60s to pick up live score updates
+    const interval = setInterval(fetchGames, 60000);
+    return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSport]);
 
