@@ -109,7 +109,7 @@ export const CrowdFeed = () => {
           currency: "USD",
           sport: (b as any).sport || "Soccer",
           league: (b as any).league || "—",
-          createdAt: new Date(Date.now() - b.id * 60000).toISOString(),
+          createdAt: new Date(Date.now() - Number(b.id) * 60000).toISOString(),
         }))
       );
       setUsingMock(true);
