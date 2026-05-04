@@ -11,6 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { DiagnosticsPanel, diag } from "@/components/DiagnosticsPanel";
 
 type Game = {
   id: string;
