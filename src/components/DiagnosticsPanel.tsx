@@ -9,7 +9,18 @@ import {
   History,
   ChevronDown,
   ChevronUp,
+  Download,
+  FileJson,
+  FileSpreadsheet,
+  Plug,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/i18n/i18n";
 import { toast } from "sonner";
