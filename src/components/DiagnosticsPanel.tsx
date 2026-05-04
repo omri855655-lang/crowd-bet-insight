@@ -409,6 +409,38 @@ export const DiagnosticsPanel = ({ onRefresh }: { onRefresh?: () => void }) => {
             {txt("היסטוריה", "History")} ({hist.length})
             {showHistory ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs gap-1"
+                disabled={hist.length === 0}
+              >
+                <Download className="w-3 h-3" />
+                {txt("ייצוא", "Export")}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-popover">
+              <DropdownMenuItem onClick={exportJson} className="text-xs gap-2">
+                <FileJson className="w-3.5 h-3.5" />
+                {txt("הורד JSON", "Download JSON")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={exportCsv} className="text-xs gap-2">
+                <FileSpreadsheet className="w-3.5 h-3.5" />
+                {txt("הורד CSV", "Download CSV")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 text-xs gap-1"
+            onClick={reconnect}
+          >
+            <Plug className="w-3 h-3" />
+            {txt("התחבר מחדש", "Reconnect")}
+          </Button>
           {onRefresh && (
             <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={onRefresh}>
               <RefreshCw className="w-3 h-3" />
