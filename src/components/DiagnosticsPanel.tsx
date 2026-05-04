@@ -9,7 +9,18 @@ import {
   History,
   ChevronDown,
   ChevronUp,
+  Download,
+  FileJson,
+  FileSpreadsheet,
+  Plug,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/i18n/i18n";
 import { toast } from "sonner";
@@ -251,6 +262,108 @@ export const DiagnosticsPanel = ({ onRefresh }: { onRefresh?: () => void }) => {
     toast.success(txt("בדיקות הסתיימו", "Tests completed"));
   };
 
+  const triggerDownload = (content: string, mime: string, ext: string) => {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    a.href = url;
+    a.download = `diagnostics-${stamp}.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const exportJson = () => {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      windowHours: 24,
+      current: entries,
+      history: hist,
+    };
+    triggerDownload(JSON.stringify(payload, null, 2), "application/json", "json");
+    toast.success(txt("ייצוא JSON הושלם", "Exported as JSON"));
+  };
+
+  const exportCsv = () => {
+    const esc = (v: unknown) => {
+      const s = v === undefined || v === null ? "" : String(v);
+      return `"${s.replace(/"/g, '""').replace(/\r?\n/g, " ")}"`;
+    };
+    const header = ["timestamp_iso", "source", "status", "ok", "count", "message", "body_snippet"];
+    const lines = [header.join(",")];
+    hist.forEach((e) => {
+      lines.push(
+        [
+          new Date(e.at).toISOString(),
+          e.source,
+          e.status ?? "",
+          e.ok ? "true" : "false",
+          e.count ?? "",
+          e.message ?? "",
+          e.bodySnippet ?? "",
+        ]
+          .map(esc)
+          .join(",")
+      );
+    });
+    (Object.keys(entries) as DiagSource[]).forEach((k) => {
+      const e = entries[k];
+      if (!e) return;
+      lines.push(
+        [
+          new Date(e.at).toISOString() + " (current)",
+          e.source,
+          e.status ?? "",
+          e.ok ? "true" : "false",
+          e.count ?? "",
+          e.message ?? "",
+          e.bodySnippet ?? "",
+        ]
+          .map(esc)
+          .join(",")
+      );
+    });
+    triggerDownload("\uFEFF" + lines.join("\n"), "text/csv;charset=utf-8", "csv");
+    toast.success(txt("ייצוא CSV הושלם", "Exported as CSV"));
+  };
+
+  const reconnect = async () => {
+    toast.info(txt("מתחבר מחדש…", "Reconnecting…"));
+    try {
+      await supabase.removeAllChannels();
+      const ch = supabase.channel(`diag-reconnect-${Date.now()}`);
+      await new Promise<void>((resolve) => {
+        ch.subscribe((status) => {
+          if (status === "SUBSCRIBED" || status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+            resolve();
+          }
+        });
+        setTimeout(resolve, 3000);
+      });
+      window.dispatchEvent(new CustomEvent("diag:reconnect"));
+      onRefresh?.();
+      diag.log({
+        source: "games_cache",
+        status: 200,
+        ok: true,
+        message: "realtime reconnected",
+        at: Date.now(),
+      });
+      toast.success(txt("חיבור חודש", "Reconnected"));
+    } catch (e) {
+      diag.log({
+        source: "games_cache",
+        status: null,
+        ok: false,
+        message: `reconnect failed: ${e instanceof Error ? e.message : "error"}`,
+        at: Date.now(),
+      });
+      toast.error(txt("החיבור נכשל", "Reconnect failed"));
+    }
+  };
+
   const reversedHistory = [...hist].reverse();
 
   return (
@@ -295,6 +408,38 @@ export const DiagnosticsPanel = ({ onRefresh }: { onRefresh?: () => void }) => {
             <History className="w-3 h-3" />
             {txt("היסטוריה", "History")} ({hist.length})
             {showHistory ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs gap-1"
+                disabled={hist.length === 0}
+              >
+                <Download className="w-3 h-3" />
+                {txt("ייצוא", "Export")}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-popover">
+              <DropdownMenuItem onClick={exportJson} className="text-xs gap-2">
+                <FileJson className="w-3.5 h-3.5" />
+                {txt("הורד JSON", "Download JSON")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={exportCsv} className="text-xs gap-2">
+                <FileSpreadsheet className="w-3.5 h-3.5" />
+                {txt("הורד CSV", "Download CSV")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 text-xs gap-1"
+            onClick={reconnect}
+          >
+            <Plug className="w-3 h-3" />
+            {txt("התחבר מחדש", "Reconnect")}
           </Button>
           {onRefresh && (
             <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={onRefresh}>
