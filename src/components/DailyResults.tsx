@@ -66,11 +66,6 @@ export const DailyResults = () => {
   const fetchOdds = async (sport: string) => {
     try {
       const sportKey = SPORT_TO_ODDS_KEY[sport] || "soccer_epl";
-      const { data } = await supabase.functions.invoke("fetch-odds", {
-        method: "GET",
-        headers: {},
-      } as any).catch(() => ({ data: null }));
-      // fallback: direct fetch with sport param (since invoke doesn't pass query well)
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-odds?sport=${sportKey}&markets=h2h,totals,spreads,btts`;
       const res = await fetch(url, {
         headers: {
@@ -86,11 +81,33 @@ export const DailyResults = () => {
           m.set(key, g);
         });
         setOddsMap(m);
+        diag.log({
+          source: "odds",
+          status: res.status,
+          ok: true,
+          count: j.games.length,
+          message: `${j.games.length} games · quota left: ${j?.quota?.remaining ?? "?"}`,
+          at: Date.now(),
+        });
       } else {
         setOddsMap(new Map());
+        diag.log({
+          source: "odds",
+          status: res.status,
+          ok: false,
+          message: j?.error || "no games returned",
+          at: Date.now(),
+        });
       }
-    } catch {
+    } catch (err) {
       setOddsMap(new Map());
+      diag.log({
+        source: "odds",
+        status: null,
+        ok: false,
+        message: err instanceof Error ? err.message : "network error",
+        at: Date.now(),
+      });
     }
   };
 
