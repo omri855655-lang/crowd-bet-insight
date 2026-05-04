@@ -219,6 +219,8 @@ export const DailyResults = () => {
           </p>
         </div>
 
+        <DiagnosticsPanel onRefresh={fetchGames} />
+
         <Tabs value={activeSport} onValueChange={setActiveSport}>
           <TabsList className="mx-auto flex justify-center mb-8 flex-wrap h-auto">
             {SPORTS.map((s) => (
