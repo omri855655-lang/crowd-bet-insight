@@ -262,6 +262,108 @@ export const DiagnosticsPanel = ({ onRefresh }: { onRefresh?: () => void }) => {
     toast.success(txt("בדיקות הסתיימו", "Tests completed"));
   };
 
+  const triggerDownload = (content: string, mime: string, ext: string) => {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    a.href = url;
+    a.download = `diagnostics-${stamp}.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const exportJson = () => {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      windowHours: 24,
+      current: entries,
+      history: hist,
+    };
+    triggerDownload(JSON.stringify(payload, null, 2), "application/json", "json");
+    toast.success(txt("ייצוא JSON הושלם", "Exported as JSON"));
+  };
+
+  const exportCsv = () => {
+    const esc = (v: unknown) => {
+      const s = v === undefined || v === null ? "" : String(v);
+      return `"${s.replace(/"/g, '""').replace(/\r?\n/g, " ")}"`;
+    };
+    const header = ["timestamp_iso", "source", "status", "ok", "count", "message", "body_snippet"];
+    const lines = [header.join(",")];
+    hist.forEach((e) => {
+      lines.push(
+        [
+          new Date(e.at).toISOString(),
+          e.source,
+          e.status ?? "",
+          e.ok ? "true" : "false",
+          e.count ?? "",
+          e.message ?? "",
+          e.bodySnippet ?? "",
+        ]
+          .map(esc)
+          .join(",")
+      );
+    });
+    (Object.keys(entries) as DiagSource[]).forEach((k) => {
+      const e = entries[k];
+      if (!e) return;
+      lines.push(
+        [
+          new Date(e.at).toISOString() + " (current)",
+          e.source,
+          e.status ?? "",
+          e.ok ? "true" : "false",
+          e.count ?? "",
+          e.message ?? "",
+          e.bodySnippet ?? "",
+        ]
+          .map(esc)
+          .join(",")
+      );
+    });
+    triggerDownload("\uFEFF" + lines.join("\n"), "text/csv;charset=utf-8", "csv");
+    toast.success(txt("ייצוא CSV הושלם", "Exported as CSV"));
+  };
+
+  const reconnect = async () => {
+    toast.info(txt("מתחבר מחדש…", "Reconnecting…"));
+    try {
+      await supabase.removeAllChannels();
+      const ch = supabase.channel(`diag-reconnect-${Date.now()}`);
+      await new Promise<void>((resolve) => {
+        ch.subscribe((status) => {
+          if (status === "SUBSCRIBED" || status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+            resolve();
+          }
+        });
+        setTimeout(resolve, 3000);
+      });
+      window.dispatchEvent(new CustomEvent("diag:reconnect"));
+      onRefresh?.();
+      diag.log({
+        source: "games_cache",
+        status: 200,
+        ok: true,
+        message: "realtime reconnected",
+        at: Date.now(),
+      });
+      toast.success(txt("חיבור חודש", "Reconnected"));
+    } catch (e) {
+      diag.log({
+        source: "games_cache",
+        status: null,
+        ok: false,
+        message: `reconnect failed: ${e instanceof Error ? e.message : "error"}`,
+        at: Date.now(),
+      });
+      toast.error(txt("החיבור נכשל", "Reconnect failed"));
+    }
+  };
+
   const reversedHistory = [...hist].reverse();
 
   return (
