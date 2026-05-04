@@ -177,7 +177,15 @@ export const DailyResults = () => {
   useEffect(() => {
     fetchGames();
     const interval = setInterval(fetchGames, 60000);
-    return () => clearInterval(interval);
+    const onReconnect = () => {
+      fetchGames();
+      fetchOdds(activeSport);
+    };
+    window.addEventListener("diag:reconnect", onReconnect);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("diag:reconnect", onReconnect);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSport]);
 
