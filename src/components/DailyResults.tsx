@@ -11,6 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { DiagnosticsPanel, diag } from "@/components/DiagnosticsPanel";
 
 type Game = {
   id: string;
@@ -65,11 +66,6 @@ export const DailyResults = () => {
   const fetchOdds = async (sport: string) => {
     try {
       const sportKey = SPORT_TO_ODDS_KEY[sport] || "soccer_epl";
-      const { data } = await supabase.functions.invoke("fetch-odds", {
-        method: "GET",
-        headers: {},
-      } as any).catch(() => ({ data: null }));
-      // fallback: direct fetch with sport param (since invoke doesn't pass query well)
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-odds?sport=${sportKey}&markets=h2h,totals,spreads,btts`;
       const res = await fetch(url, {
         headers: {
@@ -85,27 +81,59 @@ export const DailyResults = () => {
           m.set(key, g);
         });
         setOddsMap(m);
+        diag.log({
+          source: "odds",
+          status: res.status,
+          ok: true,
+          count: j.games.length,
+          message: `${j.games.length} games · quota left: ${j?.quota?.remaining ?? "?"}`,
+          at: Date.now(),
+        });
       } else {
         setOddsMap(new Map());
+        diag.log({
+          source: "odds",
+          status: res.status,
+          ok: false,
+          message: j?.error || "no games returned",
+          at: Date.now(),
+        });
       }
-    } catch {
+    } catch (err) {
       setOddsMap(new Map());
+      diag.log({
+        source: "odds",
+        status: null,
+        ok: false,
+        message: err instanceof Error ? err.message : "network error",
+        at: Date.now(),
+      });
     }
   };
 
   const fetchGames = async () => {
     setLoading(true);
     try {
-      await supabase.functions.invoke("fetch-daily-results", {
-        body: { sport: activeSport },
-      }).catch(() => null);
+      const resultsRes = await supabase.functions
+        .invoke("fetch-daily-results", { body: { sport: activeSport } })
+        .catch((e) => ({ data: null, error: e }));
+      const rErr = (resultsRes as any)?.error;
+      const rData = (resultsRes as any)?.data;
+      diag.log({
+        source: "results",
+        status: rErr ? (rErr.status ?? null) : 200,
+        ok: !rErr && !rData?.error,
+        message: rErr?.message || rData?.error || rData?.details?.access || "ok",
+        count: Array.isArray(rData?.games) ? rData.games.length : undefined,
+        at: Date.now(),
+      });
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
 
-      const { data } = await supabase
+      const { data, error: dbErr, status } = await supabase
         .from("games_cache")
         .select("*")
         .eq("sport", activeSport)
@@ -113,6 +141,15 @@ export const DailyResults = () => {
         .lte("starts_at", tomorrow.toISOString())
         .order("starts_at", { ascending: true })
         .limit(20);
+
+      diag.log({
+        source: "games_cache",
+        status: status ?? (dbErr ? null : 200),
+        ok: !dbErr,
+        count: data?.length ?? 0,
+        message: dbErr?.message || `${data?.length ?? 0} games cached`,
+        at: Date.now(),
+      });
 
       if (data && data.length > 0) {
         setGames(data as Game[]);
@@ -122,11 +159,17 @@ export const DailyResults = () => {
         setUsingMock(true);
       }
 
-      // Always try to fetch odds for the active sport
       fetchOdds(activeSport);
-    } catch {
+    } catch (err) {
       setGames(getMockGames(activeSport));
       setUsingMock(true);
+      diag.log({
+        source: "games_cache",
+        status: null,
+        ok: false,
+        message: err instanceof Error ? err.message : "fetch error",
+        at: Date.now(),
+      });
     }
     setLoading(false);
   };
@@ -175,6 +218,8 @@ export const DailyResults = () => {
             )}
           </p>
         </div>
+
+        <DiagnosticsPanel onRefresh={fetchGames} />
 
         <Tabs value={activeSport} onValueChange={setActiveSport}>
           <TabsList className="mx-auto flex justify-center mb-8 flex-wrap h-auto">
