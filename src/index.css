@@ -1,0 +1,247 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   PREMIUM SPORTS BETTING ANALYTICS DESIGN SYSTEM
+   Deep midnight + champagne gold luxury aesthetic
+   ============================================ */
+
+@layer base {
+  :root {
+    /* Core palette — deep midnight navy */
+    --background: 222 47% 5%;
+    --foreground: 40 30% 96%;
+
+    --card: 222 40% 8%;
+    --card-foreground: 40 30% 96%;
+
+    --popover: 222 45% 7%;
+    --popover-foreground: 40 30% 96%;
+
+    /* Champagne gold — primary brand */
+    --primary: 42 65% 60%;
+    --primary-foreground: 222 47% 5%;
+    --primary-glow: 45 90% 70%;
+
+    --secondary: 222 30% 14%;
+    --secondary-foreground: 40 30% 96%;
+
+    --muted: 222 25% 12%;
+    --muted-foreground: 40 10% 65%;
+
+    --accent: 42 65% 60%;
+    --accent-foreground: 222 47% 5%;
+
+    /* Semantic — odds movements */
+    --positive: 142 70% 45%;
+    --positive-foreground: 0 0% 100%;
+    --negative: 0 75% 58%;
+    --negative-foreground: 0 0% 100%;
+    --neutral: 220 15% 50%;
+
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 222 25% 16%;
+    --input: 222 30% 14%;
+    --ring: 42 65% 60%;
+
+    --radius: 0.75rem;
+
+    /* Gradients */
+    --gradient-gold: linear-gradient(135deg, hsl(42 80% 55%) 0%, hsl(45 95% 75%) 50%, hsl(38 70% 50%) 100%);
+    --gradient-midnight: linear-gradient(180deg, hsl(222 50% 7%) 0%, hsl(222 47% 5%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(222 40% 10%) 0%, hsl(222 45% 7%) 100%);
+    --gradient-glow: radial-gradient(circle at 50% 0%, hsl(42 65% 60% / 0.15) 0%, transparent 60%);
+    --gradient-positive: linear-gradient(135deg, hsl(142 70% 45%) 0%, hsl(150 65% 55%) 100%);
+    --gradient-negative: linear-gradient(135deg, hsl(0 75% 55%) 0%, hsl(15 80% 60%) 100%);
+
+    /* Shadows */
+    --shadow-gold: 0 10px 40px -10px hsl(42 65% 60% / 0.4);
+    --shadow-card: 0 8px 32px -8px hsl(222 60% 2% / 0.6);
+    --shadow-elevated: 0 20px 60px -15px hsl(222 60% 2% / 0.8);
+    --shadow-inner-gold: inset 0 1px 0 0 hsl(45 90% 75% / 0.15);
+
+    /* Transitions */
+    --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    --sidebar-background: 222 47% 5%;
+    --sidebar-foreground: 40 30% 96%;
+    --sidebar-primary: 42 65% 60%;
+    --sidebar-primary-foreground: 222 47% 5%;
+    --sidebar-accent: 222 30% 14%;
+    --sidebar-accent-foreground: 40 30% 96%;
+    --sidebar-border: 222 25% 16%;
+    --sidebar-ring: 42 65% 60%;
+  }
+
+  .dark {
+    /* Same — site is dark by default */
+    --background: 222 47% 5%;
+    --foreground: 40 30% 96%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply dark;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "ss01", "cv11";
+    background-image: var(--gradient-glow);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, h5 {
+    @apply font-display tracking-tight;
+  }
+
+  /* Numeric tabular for stats */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer components {
+  .text-gradient-gold {
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .bg-gradient-gold {
+    background: var(--gradient-gold);
+  }
+
+  .bg-gradient-card {
+    background: var(--gradient-card);
+  }
+
+  .bg-gradient-midnight {
+    background: var(--gradient-midnight);
+  }
+
+  .shadow-gold {
+    box-shadow: var(--shadow-gold);
+  }
+
+  .shadow-card-premium {
+    box-shadow: var(--shadow-card), var(--shadow-inner-gold);
+  }
+
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .glass-card {
+    background: hsl(222 40% 8% / 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(42 65% 60% / 0.1);
+  }
+
+  .gold-border {
+    border: 1px solid hsl(42 65% 60% / 0.25);
+  }
+
+  /* Animated grid background */
+  .bg-grid {
+    background-image:
+      linear-gradient(hsl(42 65% 60% / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(42 65% 60% / 0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+}
+
+@layer utilities {
+  .pulse-dot {
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.2); }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(42 65% 60% / 0.1),
+      transparent
+    );
+    background-size: 200% 100%;
+    animation: shimmer 3s infinite;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY OVERRIDES
+   ============================================ */
+.a11y-high-contrast {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 5%;
+  --card-foreground: 0 0% 100%;
+  --primary: 50 100% 60%;
+  --primary-foreground: 0 0% 0%;
+  --border: 0 0% 50%;
+  --muted-foreground: 0 0% 90%;
+}
+.a11y-high-contrast * { text-shadow: none !important; }
+
+.a11y-reduced-motion *,
+.a11y-reduced-motion *::before,
+.a11y-reduced-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+.a11y-underline-links a { text-decoration: underline !important; }
+
+/* Colorblind filters */
+[data-colorblind="protanopia"]   { filter: url('#cb-protanopia'); }
+[data-colorblind="deuteranopia"] { filter: url('#cb-deuteranopia'); }
+[data-colorblind="tritanopia"]   { filter: url('#cb-tritanopia'); }
+
+/* Visible focus ring for keyboard nav */
+*:focus-visible {
+  outline: 3px solid hsl(var(--primary)) !important;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.skip-to-content {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  padding: 12px 20px;
+  z-index: 9999;
+  font-weight: 600;
+  border-radius: 0 0 8px 0;
+}
+.skip-to-content:focus {
+  left: 0;
+}
