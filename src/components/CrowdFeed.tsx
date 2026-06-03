@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { recentUserBets } from "@/data/mockData";
 import { useI18n } from "@/i18n/i18n";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { ReportBetDialog } from "@/components/ReportBetDialog";
 import { ArrowUpRight, Filter, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -60,6 +60,28 @@ export const CrowdFeed = () => {
   const [range, setRange] = useState<TimeRange>("all");
 
   const load = async () => {
+    if (!isSupabaseConfigured) {
+      setBets(
+        recentUserBets.map((b) => ({
+          id: String(b.id),
+          user: b.user,
+          avatar: b.avatar,
+          bookmaker: b.bookmaker,
+          pick: b.pick,
+          game: b.game,
+          amount: b.amount,
+          odds: b.odds,
+          timeAgo: b.timeAgo,
+          currency: "USD",
+          sport: (b as any).sport || "Soccer",
+          league: (b as any).league || "—",
+          createdAt: new Date(Date.now() - Number(b.id.replace(/\D/g, "") || "1") * 60000).toISOString(),
+        }))
+      );
+      setUsingMock(true);
+      return;
+    }
+
     const { data: betsData } = await supabase
       .from("bets")
       .select("id, bet_on, amount, odds, currency, bookmaker, home_team, away_team, created_at, user_id, sport, league")
@@ -118,6 +140,7 @@ export const CrowdFeed = () => {
 
   useEffect(() => {
     load();
+    if (!isSupabaseConfigured) return;
     const channel = supabase
       .channel("bets-feed")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "bets" }, () => load())

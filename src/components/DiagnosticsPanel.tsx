@@ -14,7 +14,7 @@ import {
   FileSpreadsheet,
   Plug,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -193,6 +193,10 @@ export const DiagnosticsPanel = ({ onRefresh }: { onRefresh?: () => void }) => {
     (entries.odds.count ?? 0) > 0;
 
   const runTests = async () => {
+    if (!isSupabaseConfigured) {
+      toast.error(txt("הדיאגנוסטיקה זמינה רק אחרי חיבור Supabase לפרסום", "Diagnostics are available after connecting Supabase to the deployment"));
+      return;
+    }
     setTesting(true);
     toast.info(txt("מריץ בדיקות…", "Running tests…"));
     const base = import.meta.env.VITE_SUPABASE_URL;

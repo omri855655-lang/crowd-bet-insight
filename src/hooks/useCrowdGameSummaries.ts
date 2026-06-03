@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 
 export type CrowdGameSummary = {
   game_key: string;
@@ -34,6 +34,15 @@ export const useCrowdGameSummaries = () => {
 
   useEffect(() => {
     let mounted = true;
+
+    if (!isSupabaseConfigured) {
+      setState({
+        summaries: [],
+        loading: false,
+        error: "Supabase is not configured for this deployment",
+      });
+      return;
+    }
 
     const load = async () => {
       const { data, error } = await supabase

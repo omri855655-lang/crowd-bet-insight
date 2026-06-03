@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Sparkles, Lock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/i18n/i18n";
 import { useNavigate } from "react-router-dom";
@@ -30,6 +30,10 @@ export const AIRecommendations = () => {
     }
     if (!prompt.trim()) {
       toast.error(txt("הכנס שאלה", "Enter a question"));
+      return;
+    }
+    if (!isSupabaseConfigured) {
+      toast.error(txt("פיצ'ר ה-AI עדיין לא מחובר בפרסום הזה", "The AI feature is not connected in this deployment yet"));
       return;
     }
     setLoading(true);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 
 export type RealGame = {
   id: string;
@@ -28,6 +28,16 @@ export const useRealOdds = (sport: string = "soccer_epl") => {
   useEffect(() => {
     let mounted = true;
     (async () => {
+      if (!isSupabaseConfigured) {
+        if (!mounted) return;
+        setState({
+          games: [],
+          loading: false,
+          error: "Supabase is not configured for this deployment",
+        });
+        return;
+      }
+
       try {
         const { data, error } = await supabase.functions.invoke("fetch-odds", {
           body: null,

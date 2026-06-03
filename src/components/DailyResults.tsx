@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/i18n/i18n";
 import { Calendar, Trophy, TrendingUp, ChevronRight } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -64,6 +64,10 @@ export const DailyResults = () => {
   const txt = (he: string, en: string) => (lang === "he" ? he : en);
 
   const fetchOdds = async (sport: string) => {
+    if (!isSupabaseConfigured) {
+      setOddsMap(new Map());
+      return;
+    }
     try {
       const sportKey = SPORT_TO_ODDS_KEY[sport] || "soccer_epl";
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-odds?sport=${sportKey}&markets=h2h,totals,spreads,btts`;
@@ -113,6 +117,13 @@ export const DailyResults = () => {
 
   const fetchGames = async () => {
     setLoading(true);
+    if (!isSupabaseConfigured) {
+      setGames(getMockGames(activeSport));
+      setUsingMock(true);
+      setOddsMap(new Map());
+      setLoading(false);
+      return;
+    }
     try {
       const resultsRes = await supabase.functions
         .invoke("fetch-daily-results", { body: { sport: activeSport } })
