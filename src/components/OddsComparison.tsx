@@ -1,14 +1,55 @@
 import { motion } from "framer-motion";
 import { games, bookmakers } from "@/data/mockData";
 import { useI18n } from "@/i18n/i18n";
+import { useRealOdds } from "@/hooks/useRealOdds";
 
 export const OddsComparison = () => {
   const { t } = useI18n();
+  const { games: realGames } = useRealOdds("upcoming");
+  const realGame = realGames[0];
   const game = games[0];
 
-  const bestHome = Math.max(...Object.values(game.odds).map((o) => o.home));
-  const bestDraw = Math.max(...Object.values(game.odds).map((o) => o.draw ?? 0));
-  const bestAway = Math.max(...Object.values(game.odds).map((o) => o.away));
+  const realBookmakers =
+    realGame
+      ? Object.entries(realGame.bookmakers)
+          .filter(([, bookmaker]) => bookmaker.home || bookmaker.away || bookmaker.draw)
+          .map(([key, bookmaker]) => ({
+            id: key,
+            name: bookmaker.title,
+            region: "Global" as const,
+            logo: "🌐",
+            odds: {
+              home: bookmaker.home ?? 0,
+              draw: bookmaker.draw ?? 0,
+              away: bookmaker.away ?? 0,
+            },
+          }))
+      : [];
+
+  const displayTitle = realGame
+    ? {
+        league: realGame.league,
+        homeTeam: realGame.homeTeam,
+        awayTeam: realGame.awayTeam,
+        startTime: new Date(realGame.startTime).toLocaleString(),
+        homeFlag: "🏟️",
+        awayFlag: "🏟️",
+        totalVolume: "LIVE",
+      }
+    : game;
+
+  const oddsRows = realBookmakers.length > 0
+    ? realBookmakers
+    : bookmakers
+        .map((bm) => ({
+          ...bm,
+          odds: game.odds[bm.id],
+        }))
+        .filter((bm) => bm.odds);
+
+  const bestHome = Math.max(...oddsRows.map((row) => row.odds.home));
+  const bestDraw = Math.max(...oddsRows.map((row) => row.odds.draw ?? 0));
+  const bestAway = Math.max(...oddsRows.map((row) => row.odds.away));
 
   return (
     <section className="container py-16 md:py-24">
@@ -30,19 +71,21 @@ export const OddsComparison = () => {
         <div className="bg-gradient-card p-6 border-b border-border/50">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
-              <div className="text-3xl">{game.homeFlag}</div>
+              <div className="text-3xl">{displayTitle.homeFlag}</div>
               <div>
-                <div className="text-[10px] uppercase tracking-[0.15em] text-primary font-semibold mb-0.5">{game.league}</div>
+                <div className="text-[10px] uppercase tracking-[0.15em] text-primary font-semibold mb-0.5">{displayTitle.league}</div>
                 <div className="font-display text-2xl font-bold">
-                  {game.homeTeam} <span className="text-muted-foreground text-base">{t("card.vs").toLowerCase()}</span> {game.awayTeam}
+                  {displayTitle.homeTeam} <span className="text-muted-foreground text-base">{t("card.vs").toLowerCase()}</span> {displayTitle.awayTeam}
                 </div>
-                <div className="text-xs text-muted-foreground mt-1 tabular">{game.startTime}</div>
+                <div className="text-xs text-muted-foreground mt-1 tabular">{displayTitle.startTime}</div>
               </div>
-              <div className="text-3xl">{game.awayFlag}</div>
+              <div className="text-3xl">{displayTitle.awayFlag}</div>
             </div>
             <div className="text-end">
               <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("odds.total_vol")}</div>
-              <div className="font-display text-2xl font-bold text-gradient-gold tabular">${game.totalVolume}M</div>
+              <div className="font-display text-2xl font-bold text-gradient-gold tabular">
+                {realGame ? "REAL-TIME" : `$${displayTitle.totalVolume}M`}
+              </div>
             </div>
           </div>
         </div>
@@ -55,13 +98,13 @@ export const OddsComparison = () => {
                   {t("odds.bookmaker")}
                 </th>
                 <th className="text-center text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold py-4 px-4">
-                  {game.homeTeam}
+                  {displayTitle.homeTeam}
                 </th>
                 <th className="text-center text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold py-4 px-4">
                   {t("odds.draw")}
                 </th>
                 <th className="text-center text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold py-4 px-4">
-                  {game.awayTeam}
+                  {displayTitle.awayTeam}
                 </th>
                 <th className="text-end text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold py-4 px-6">
                   {t("odds.region")}
@@ -69,9 +112,8 @@ export const OddsComparison = () => {
               </tr>
             </thead>
             <tbody>
-              {bookmakers.map((bm, i) => {
-                const o = game.odds[bm.id];
-                if (!o) return null;
+              {oddsRows.map((bm, i) => {
+                const o = bm.odds;
                 const isWinner = bm.id === "winner";
                 return (
                   <motion.tr

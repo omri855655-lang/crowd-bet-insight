@@ -37,6 +37,12 @@ export type Game = {
   // Total volume in $M
   totalVolume: number;
   trending?: boolean;
+  marketConsensus?: {
+    provider: string;
+    homePct: number;
+    awayPct: number;
+    drawPct?: number;
+  };
 };
 
 export const games: Game[] = [
@@ -62,6 +68,7 @@ export const games: Game[] = [
     userReports: 3421,
     totalVolume: 24.8,
     trending: true,
+    marketConsensus: { provider: "Consensus", homePct: 54, drawPct: 17, awayPct: 29 },
   },
   {
     id: "g2",
@@ -86,6 +93,7 @@ export const games: Game[] = [
     userReports: 5872,
     totalVolume: 41.2,
     trending: true,
+    marketConsensus: { provider: "Consensus", homePct: 61, drawPct: 9, awayPct: 30 },
   },
   {
     id: "g3",
@@ -108,6 +116,7 @@ export const games: Game[] = [
     crowdMoney: { home: 980, away: 1120 },
     userReports: 2104,
     totalVolume: 18.5,
+    marketConsensus: { provider: "Consensus", homePct: 49, awayPct: 51 },
   },
   {
     id: "g4",

@@ -116,6 +116,66 @@ export type Database = {
         }
         Relationships: []
       }
+      market_splits_cache: {
+        Row: {
+          away_bets_pct: number | null
+          away_money_pct: number | null
+          away_team: string
+          draw_bets_pct: number | null
+          draw_money_pct: number | null
+          external_game_id: string | null
+          game_key: string
+          home_bets_pct: number | null
+          home_money_pct: number | null
+          home_team: string
+          id: string
+          league: string | null
+          market: string
+          provider: string
+          raw: Json | null
+          sport: string
+          updated_at: string
+        }
+        Insert: {
+          away_bets_pct?: number | null
+          away_money_pct?: number | null
+          away_team: string
+          draw_bets_pct?: number | null
+          draw_money_pct?: number | null
+          external_game_id?: string | null
+          game_key: string
+          home_bets_pct?: number | null
+          home_money_pct?: number | null
+          home_team: string
+          id?: string
+          league?: string | null
+          market?: string
+          provider: string
+          raw?: Json | null
+          sport: string
+          updated_at?: string
+        }
+        Update: {
+          away_bets_pct?: number | null
+          away_money_pct?: number | null
+          away_team?: string
+          draw_bets_pct?: number | null
+          draw_money_pct?: number | null
+          external_game_id?: string | null
+          game_key?: string
+          home_bets_pct?: number | null
+          home_money_pct?: number | null
+          home_team?: string
+          id?: string
+          league?: string | null
+          market?: string
+          provider?: string
+          raw?: Json | null
+          sport?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -215,6 +275,35 @@ export type Database = {
           home_team: string | null
           last_reported_at: string | null
           league: string | null
+          other_amount: number | null
+          report_count: number | null
+          sport: string | null
+          total_amount: number | null
+        }
+        Relationships: []
+      }
+      market_intelligence_summary: {
+        Row: {
+          away_amount: number | null
+          away_bets_pct: number | null
+          away_money_pct: number | null
+          away_team: string | null
+          crowd_away_pct: number | null
+          crowd_draw_pct: number | null
+          crowd_home_pct: number | null
+          draw_amount: number | null
+          draw_bets_pct: number | null
+          draw_money_pct: number | null
+          external_game_id: string | null
+          game_key: string | null
+          home_amount: number | null
+          home_bets_pct: number | null
+          home_money_pct: number | null
+          home_team: string | null
+          last_reported_at: string | null
+          league: string | null
+          market_provider: string | null
+          market_updated_at: string | null
           other_amount: number | null
           report_count: number | null
           sport: string | null

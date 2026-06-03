@@ -3,7 +3,8 @@ import { Flame, TrendingUp, Users, Loader2, AlertCircle } from "lucide-react";
 import { games as mockGames, type Game } from "@/data/mockData";
 import { useI18n } from "@/i18n/i18n";
 import { useRealOdds } from "@/hooks/useRealOdds";
-import { buildGameKey, type CrowdGameSummary, useCrowdGameSummaries } from "@/hooks/useCrowdGameSummaries";
+import { buildGameKey } from "@/hooks/useCrowdGameSummaries";
+import { type MarketIntelligenceSummary, useMarketIntelligenceSummaries } from "@/hooks/useMarketIntelligenceSummaries";
 import { useMemo, useState } from "react";
 
 const formatMoney = (k: number) => k >= 1000 ? `$${(k / 1000).toFixed(1)}M` : `$${k.toFixed(0)}K`;
@@ -34,6 +35,25 @@ const CrowdBar = ({ game }: { game: Game }) => {
         <span className="text-positive font-semibold">{homePct.toFixed(0)}%</span>
         {drawPct > 0 && <span className="text-muted-foreground">{drawPct.toFixed(0)}%</span>}
         <span className="text-primary font-semibold">{awayPct.toFixed(0)}%</span>
+      </div>
+    </div>
+  );
+};
+
+const MarketVsCrowd = ({ game }: { game: Game }) => {
+  if (!game.marketConsensus) return null;
+
+  return (
+    <div className="mt-3 rounded-xl bg-secondary/50 px-3 py-2 text-[11px]">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-muted-foreground">Crowd vs Market</span>
+        <span className="font-semibold text-primary">{game.marketConsensus.provider}</span>
+      </div>
+      <div className="mt-1 flex items-center justify-between gap-3 tabular">
+        <span className="text-positive">
+          Crowd {Math.round(game.crowdMoney.home / Math.max(game.crowdMoney.home + (game.crowdMoney.draw ?? 0) + game.crowdMoney.away, 1) * 100)}%
+        </span>
+        <span className="text-muted-foreground">Market {game.marketConsensus.homePct.toFixed(0)}%</span>
       </div>
     </div>
   );
@@ -104,6 +124,7 @@ const GameCard = ({ game, index }: { game: Game; index: number }) => {
       </div>
 
       <CrowdBar game={game} />
+      <MarketVsCrowd game={game} />
 
       <div className="flex items-center justify-between mt-5 pt-4 border-t border-border/50">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -123,11 +144,14 @@ const GameCard = ({ game, index }: { game: Game; index: number }) => {
 const enrichRealGame = (
   real: import("@/hooks/useRealOdds").RealGame,
   idx: number,
-  summary?: CrowdGameSummary
+  summary?: MarketIntelligenceSummary
 ): Game => {
   const oddsValues = Object.values(real.bookmakers);
-  const avgHome = oddsValues.reduce((s, o) => s + o.home, 0) / Math.max(oddsValues.length, 1);
-  const avgAway = oddsValues.reduce((s, o) => s + o.away, 0) / Math.max(oddsValues.length, 1);
+  const pricedBooks = oddsValues.filter((book) => typeof book.home === "number" && typeof book.away === "number");
+  const avgHome =
+    pricedBooks.reduce((sum, book) => sum + (book.home ?? 0), 0) / Math.max(pricedBooks.length, 1);
+  const avgAway =
+    pricedBooks.reduce((sum, book) => sum + (book.away ?? 0), 0) / Math.max(pricedBooks.length, 1);
 
   const homeWeight = avgHome > 0 ? 1 / avgHome : 1;
   const awayWeight = avgAway > 0 ? 1 / avgAway : 1;
@@ -167,14 +191,23 @@ const enrichRealGame = (
     userReports: reportCount,
     totalVolume,
     trending: idx < 2,
+    marketConsensus:
+      summary?.market_provider && summary.home_money_pct != null && summary.away_money_pct != null
+        ? {
+            provider: summary.market_provider,
+            homePct: summary.home_money_pct,
+            awayPct: summary.away_money_pct,
+            drawPct: summary.draw_money_pct ?? undefined,
+          }
+        : undefined,
   };
 };
 
 export const LiveGamesBoard = () => {
   const { t } = useI18n();
   const [useReal, setUseReal] = useState(true);
-  const { games: realGames, loading, error } = useRealOdds("soccer_epl");
-  const { summaries } = useCrowdGameSummaries();
+  const { games: realGames, loading, error } = useRealOdds("upcoming");
+  const { summaries } = useMarketIntelligenceSummaries();
 
   const displayGames = useMemo<Game[]>(() => {
     if (useReal && realGames.length > 0) {

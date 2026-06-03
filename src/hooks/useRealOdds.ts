@@ -8,7 +8,29 @@ export type RealGame = {
   homeTeam: string;
   awayTeam: string;
   startTime: string;
-  bookmakers: Record<string, { home: number; draw?: number; away: number }>;
+  bookmakers: Record<
+    string,
+    {
+      title: string;
+      home?: number;
+      draw?: number;
+      away?: number;
+      markets?: {
+        h2h?: { home?: number; draw?: number; away?: number };
+        totals?: Record<string, { over?: number; under?: number }>;
+        spreads?: Record<string, { point: number; price: number }>;
+        btts?: { yes?: number; no?: number };
+      };
+    }
+  >;
+  bestOdds?: {
+    h2h?: { home: number; draw: number; away: number };
+    btts?: { yes: number; no: number };
+  };
+  source?: {
+    provider: string;
+    sportKey: string;
+  };
 };
 
 export type OddsResponse = {

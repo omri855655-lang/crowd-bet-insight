@@ -26,6 +26,23 @@ interface OddsApiGame {
   bookmakers: BookmakerOdds[];
 }
 
+const normalizeSportKeys = (sportParam: string | null) => {
+  if (!sportParam || sportParam === "upcoming") return ["upcoming"];
+  if (sportParam === "all") {
+    return [
+      "soccer_epl",
+      "basketball_nba",
+      "americanfootball_nfl",
+      "tennis_atp_french_open",
+      "baseball_mlb",
+    ];
+  }
+  return sportParam
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -41,44 +58,51 @@ Deno.serve(async (req) => {
     }
 
     const url = new URL(req.url);
-    const sport = url.searchParams.get("sport") ?? "soccer_epl";
+    const sport = url.searchParams.get("sport") ?? "upcoming";
     const region = url.searchParams.get("regions") ?? "uk,eu,us";
     // Markets: h2h (1X2), totals (over/under goals), spreads (handicap), btts (both teams to score)
     const markets = url.searchParams.get("markets") ?? "h2h,totals,spreads,btts";
 
-    let sportKey = sport;
-    if (sport === "all") sportKey = "soccer_epl";
+    const sportKeys = normalizeSportKeys(sport);
+    const allGames: OddsApiGame[] = [];
+    let requestsRemaining: string | null = null;
+    let requestsUsed: string | null = null;
 
-    const oddsUrl = `https://api.the-odds-api.com/v4/sports/${sportKey}/odds/?apiKey=${apiKey}&regions=${region}&markets=${markets}&oddsFormat=decimal`;
+    for (const sportKey of sportKeys) {
+      const oddsUrl = `https://api.the-odds-api.com/v4/sports/${sportKey}/odds/?apiKey=${apiKey}&regions=${region}&markets=${markets}&oddsFormat=decimal`;
+      const response = await fetch(oddsUrl);
+      requestsRemaining = response.headers.get("x-requests-remaining");
+      requestsUsed = response.headers.get("x-requests-used");
 
-    const response = await fetch(oddsUrl);
-    const requestsRemaining = response.headers.get("x-requests-remaining");
-    const requestsUsed = response.headers.get("x-requests-used");
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Odds API error [${response.status}] for ${sportKey}:`, errorText);
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: `Odds API returned ${response.status}`,
+            details: errorText,
+            fallback: true,
+            quota: { remaining: requestsRemaining, used: requestsUsed },
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Odds API error [${response.status}]:`, errorText);
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: `Odds API returned ${response.status}`,
-          details: errorText,
-          fallback: true,
-          quota: { remaining: requestsRemaining, used: requestsUsed },
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      const games: OddsApiGame[] = await response.json();
+      allGames.push(...games);
     }
 
-    const games: OddsApiGame[] = await response.json();
-
     // Normalize: extract best odds per market across bookmakers
-    const normalized = games.slice(0, 20).map((g) => {
+    const normalized = allGames
+      .sort((a, b) => new Date(a.commence_time).getTime() - new Date(b.commence_time).getTime())
+      .slice(0, 40)
+      .map((g) => {
       const marketsByType: Record<string, any> = {};
       const bookmakers: Record<string, any> = {};
 
       g.bookmakers.forEach((bm) => {
-        bookmakers[bm.key] = { title: bm.title, markets: {} };
+        bookmakers[bm.key] = { title: bm.title, markets: {} as Record<string, any> };
 
         bm.markets.forEach((m) => {
           // Build per-market structure
@@ -86,6 +110,9 @@ Deno.serve(async (req) => {
             const home = m.outcomes.find((o) => o.name === g.home_team)?.price;
             const away = m.outcomes.find((o) => o.name === g.away_team)?.price;
             const draw = m.outcomes.find((o) => o.name === "Draw")?.price;
+            bookmakers[bm.key].home = home;
+            bookmakers[bm.key].draw = draw;
+            bookmakers[bm.key].away = away;
             bookmakers[bm.key].markets.h2h = { home, away, draw };
           } else if (m.key === "totals") {
             // Over/Under — group by point
@@ -135,6 +162,10 @@ Deno.serve(async (req) => {
         startTime: g.commence_time,
         bookmakers,
         bestOdds: { h2h: bestH2h, btts: bestBtts },
+        source: {
+          provider: "the-odds-api",
+          sportKey: g.sport_key,
+        },
       };
     });
 
